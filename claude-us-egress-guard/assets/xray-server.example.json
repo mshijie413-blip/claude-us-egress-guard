@@ -1,0 +1,42 @@
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbounds": [
+    {
+      "tag": "vless-reality",
+      "listen": "0.0.0.0",
+      "port": 8443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "REPLACE_WITH_VLESS_UUID",
+            "flow": "xtls-rprx-vision"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "dest": "REPLACE_WITH_REALITY_DEST_HOST:443",
+          "serverNames": [
+            "REPLACE_WITH_TLS_SERVER_NAME"
+          ],
+          "privateKey": "REPLACE_WITH_REALITY_PRIVATE_KEY",
+          "shortIds": [
+            "REPLACE_WITH_REALITY_SHORT_ID"
+          ]
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "direct",
+      "protocol": "freedom"
+    }
+  ]
+}

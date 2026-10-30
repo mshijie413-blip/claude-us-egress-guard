@@ -1,0 +1,59 @@
+#!/bin/zsh
+# Template: start a loopback-only Xray instance and verify public egress.
+set -euo pipefail
+umask 077
+
+BASE="${CLAUDE_XRAY_HOME:-$HOME/Library/Application Support/ClaudeVPSDirect}"
+XRAY_BIN="${XRAY_BIN:-$BASE/xray}"
+CONFIG="${XRAY_CONFIG:-$BASE/client.json}"
+PHYSICAL_INTERFACE="${PHYSICAL_INTERFACE:-en0}"
+PORT="${CLAUDE_PROXY_PORT:-17891}"
+EXPECTED_EXIT="${CLAUDE_EXPECTED_EXIT:?set CLAUDE_EXPECTED_EXIT to the verified VPS IPv4}"
+CHILD_PID=""
+
+cleanup() {
+  trap - EXIT INT TERM
+  [[ -n "$CHILD_PID" ]] && kill "$CHILD_PID" 2>/dev/null || true
+}
+trap cleanup EXIT INT TERM
+
+interface_ready() {
+  [[ "$(ifconfig "$PHYSICAL_INTERFACE" 2>/dev/null | awk '/status:/ {print $2; exit}')" == "active" ]] &&
+    [[ -n "$(ipconfig getifaddr "$PHYSICAL_INTERFACE" 2>/dev/null)" ]]
+}
+
+verify_exit() {
+  local answer
+  answer=$(curl -4 -fsS \
+    --proxy "http://127.0.0.1:$PORT" \
+    --noproxy '' \
+    --connect-timeout 4 \
+    --max-time 10 \
+    https://api.ipify.org 2>/dev/null || true)
+  [[ "$answer" == "$EXPECTED_EXIT" ]]
+}
+
+[[ -x "$XRAY_BIN" && -f "$CONFIG" ]] || {
+  echo "XRAY_FILES_MISSING" >&2
+  exit 2
+}
+interface_ready || {
+  echo "PHYSICAL_INTERFACE_NOT_READY: $PHYSICAL_INTERFACE" >&2
+  exit 3
+}
+
+"$XRAY_BIN" run -test -config "$CONFIG" >/dev/null
+"$XRAY_BIN" run -config "$CONFIG" &
+CHILD_PID=$!
+sleep 1
+
+kill -0 "$CHILD_PID" 2>/dev/null || {
+  echo "XRAY_START_FAILED" >&2
+  exit 4
+}
+verify_exit || {
+  echo "XRAY_EXIT_NOT_VERIFIED" >&2
+  exit 5
+}
+echo "XRAY_READY proxy=127.0.0.1:$PORT"
+wait "$CHILD_PID"

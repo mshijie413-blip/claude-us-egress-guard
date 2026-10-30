@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>ProxySettings</key>
+  <dict>
+    <key>ProxyMode</key>
+    <string>pac_script</string>
+    <key>ProxyPacUrl</key>
+    <string>file:///Library/Application%20Support/ClaudeNetwork/claude_split.pac</string>
+    <key>ProxyPacMandatory</key>
+    <true/>
+    <key>ProxyBypassList</key>
+    <string></string>
+  </dict>
+</dict>
+</plist>

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Claude US Egress Guard"
+  short_description: "Audit and operate a no-TUN macOS Claude egress guard"
+  default_prompt: "Use $claude-us-egress-guard to audit this Mac, explain the no-TUN route, and apply only explicitly authorized hardening changes."
+policy:
+  allow_implicit_invocation: true
